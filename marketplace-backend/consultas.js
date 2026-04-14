@@ -52,14 +52,25 @@ const obtenerUsuario = async (email) => {
   return usuario;
 };
 const publicarProducto = async (producto) => {
-  const { nombre, descripcion, precio, imagen, email } = producto;
-  // Buscamos el ID del usuario que está publicando
-  const userQuery = "SELECT id FROM usuarios WHERE email = $1";
-  const { rows: [user] } = await pool.query(userQuery, [email]);
+  try {
+    const { nombre, descripcion, precio, imagen, email } = producto;
+    
+    // 1. Buscamos el ID del usuario
+    const userQuery = "SELECT id FROM usuarios WHERE email = $1";
+    const { rows: [user] } = await pool.query(userQuery, [email]);
 
-  const query = "INSERT INTO productos (nombre, descripcion, precio, imagen, usuario_id) VALUES ($1, $2, $3, $4, $5)";
-  const values = [nombre, descripcion, precio, imagen, user.id];
-  await pool.query(query, values);
+    if (!user) throw new Error("Usuario no encontrado en la base de datos");
+
+    // 2. Insertamos el producto (REVISA QUE LOS NOMBRES SEAN IGUALES A TU TABLA)
+    const query = "INSERT INTO productos (nombre, descripcion, precio, imagen, usuario_id) VALUES ($1, $2, $3, $4, $5)";
+    const values = [nombre, descripcion, precio, imagen, user.id];
+    
+    await pool.query(query, values);
+    return true;
+  } catch (error) {
+    console.error("ERROR EN SQL:", error.detail || error.message); // Esto se verá en Render
+    throw error; // Re-lanzamos para que el index.js mande el 500
+  }
 };
 
 // Exportamos todas las funciones
