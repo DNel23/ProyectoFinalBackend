@@ -51,11 +51,22 @@ const obtenerUsuario = async (email) => {
   const { rows: [usuario] } = await pool.query(query, values);
   return usuario;
 };
+const publicarProducto = async (producto) => {
+  const { nombre, descripcion, precio, imagen, email } = producto;
+  // Buscamos el ID del usuario que está publicando
+  const userQuery = "SELECT id FROM usuarios WHERE email = $1";
+  const { rows: [user] } = await pool.query(userQuery, [email]);
+
+  const query = "INSERT INTO productos (nombre, descripcion, precio, imagen, usuario_id) VALUES ($1, $2, $3, $4, $5)";
+  const values = [nombre, descripcion, precio, imagen, user.id];
+  await pool.query(query, values);
+};
 
 // Exportamos todas las funciones
 module.exports = { 
   registrarUsuario, 
   getProductos, 
   verificarUsuario, 
-  obtenerUsuario 
+  obtenerUsuario,
+  publicarProducto
 };
