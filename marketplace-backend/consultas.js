@@ -14,7 +14,7 @@ const pool = new Pool({
   }
 });
 
-// 1. Funcion para Registrar Usuario
+// 1. Función para Registrar Usuario
 const registrarUsuario = async (usuario) => {
   let { email, password, nombre, avatar } = usuario;
   const passwordEncriptada = bcrypt.hashSync(password); // Encripta la clave
@@ -29,6 +29,7 @@ const getProductos = async () => {
   return rows;
 };
 
+// 3. Función para verificar credenciales en el Login
 const verificarUsuario = async (email, password) => {
   const values = [email];
   const query = "SELECT * FROM usuarios WHERE email = $1";
@@ -42,4 +43,19 @@ const verificarUsuario = async (email, password) => {
   if (!passwordEsCorrecta) throw { code: 401, message: "Contraseña incorrecta" };
 };
 
-module.exports = { registrarUsuario, getProductos, verificarUsuario };
+// 4. NUEVA: Función para obtener los datos completos del usuario (nombre, etc.)
+// Esta es la que usa la ruta /perfil para alimentar el frontend
+const obtenerUsuario = async (email) => {
+  const query = "SELECT email, nombre, avatar FROM usuarios WHERE email = $1";
+  const values = [email];
+  const { rows: [usuario] } = await pool.query(query, values);
+  return usuario;
+};
+
+// Exportamos todas las funciones
+module.exports = { 
+  registrarUsuario, 
+  getProductos, 
+  verificarUsuario, 
+  obtenerUsuario 
+};
